@@ -1,10 +1,33 @@
 import pandas as pd
 import numpy as np
-import spacy
 import readability
 
-# Chargement du modèle spaCy pour le français
-nlp = spacy.load("fr_core_news_sm")
+import spacy
+from spacy.util import set_data_path
+import os
+
+# Local model path (writeable in Streamlit Cloud)
+LOCAL_SPACY_PATH = "/tmp/spacy"
+
+# Global nlp instance
+_nlp = None
+
+def get_nlp():
+    global _nlp
+    if _nlp is None:
+        try:
+            _nlp = spacy.load("fr_core_news_sm")
+        except OSError:
+            # Redirect spaCy to a writeable model folder
+            os.makedirs(LOCAL_SPACY_PATH, exist_ok=True)
+            set_data_path(LOCAL_SPACY_PATH)
+            
+            # Download and load the model into this folder
+            import spacy.cli
+            spacy.cli.download("fr_core_news_sm")
+            _nlp = spacy.load("fr_core_news_sm")
+    return _nlp
+
 
 # Extraction des mesures de lisibilité
 def get_features(text, lang='fr'):
