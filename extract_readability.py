@@ -4,17 +4,7 @@ import spacy
 import readability
 
 # Chargement du modèle spaCy pour le français
-_nlp = None
-def get_nlp():
-    global _nlp
-    if _nlp is None:
-        try:
-            _nlp = spacy.load("fr_core_news_sm")
-        except:
-            import spacy.cli
-            spacy.cli.download("fr_core_news_sm")
-            _nlp = spacy.load("fr_core_news_sm")
-    return _nlp
+nlp = spacy.load("fr_core_news_sm")
 
 # Extraction des mesures de lisibilité
 def get_features(text, lang='fr'):
