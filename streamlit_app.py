@@ -5,6 +5,14 @@ import joblib
 from extract_readability import extract_readability_features
 from extract_plongements_camembert import extract_camembert_diff
 
+import spacy
+try:
+    nlp = spacy.load("fr_core_news_sm")
+except:
+    import spacy.cli
+    spacy.cli.download("fr_core_news_sm")
+    nlp = spacy.load("fr_core_news_sm")
+
 # Load models
 model = joblib.load("mlp_exp_max_rev_read_model.pkl")
 pca = joblib.load("pca_model_max_rev.pkl")
