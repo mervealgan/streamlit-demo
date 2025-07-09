@@ -1,109 +1,46 @@
 import streamlit as st
-import joblib
 import pandas as pd
+import joblib
+
 from extract_readability import extract_readability_features
-from extraction_plongements_camembert import extract_camembert_diff
+from extract_plongements_camembert import extract_camembert_diff
 
-# Page config
-st.set_page_config(
-    page_title="Prédiction de Lisibilité",
-    page_icon="📚",
-    layout="wide"
-)
+# Load models
+model = joblib.load("mlp_exp_max_rev_read_model.pkl")
+pca = joblib.load("pca_model_max_rev.pkl")
 
-# Cache the model loading
-@st.cache_resource
-def load_model():
-    """Load the trained model."""
-    try:
-        model = joblib.load("random_forest_exp_max_read_model.pkl")
-        return model
-    except Exception as e:
-        st.error(f"Erreur lors du chargement du modèle: {e}")
-        return None
+# App layout
+st.title("Prédiction de l’amélioration de lisibilité")
+st.write("Entrez une phrase **originale** et sa version **simplifiée**.")
 
-# Load model
-model = load_model()
+original = st.text_area("Phrase originale")
+simplified = st.text_area("Phrase simplifiée")
 
-# Title and description
-st.title("📚 Prédiction de Lisibilité après Simplification")
-st.markdown("""
-Cette application prédit le gain de lisibilité obtenu en simplifiant un texte.
-Entrez votre phrase originale et sa version simplifiée pour obtenir une estimation.
-""")
-
-# Create two columns for input
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("Phrase originale")
-    original = st.text_area(
-        "Entrez la phrase originale ici:",
-        height=100,
-        placeholder="Tapez votre texte original...",
-        key="original"
-    )
-
-with col2:
-    st.subheader("Phrase simplifiée")
-    simplified = st.text_area(
-        "Entrez la phrase simplifiée ici:",
-        height=100,
-        placeholder="Tapez votre texte simplifié...",
-        key="simplified"
-    )
-
-# Predict button
-if st.button("🔍 Prédire le gain de lisibilité", type="primary"):
-    if not original or not simplified:
-        st.error("⚠️ Veuillez entrer du texte dans les deux champs.")
-    elif not model:
-        st.error("❌ Le modèle n'a pas pu être chargé.")
+if st.button("Prédire"):
+    if original.strip() == simplified.strip():
+        value = 0.0
+        features = pd.DataFrame()
     else:
-        try:
-            with st.spinner("Analyse en cours..."):
-                # Extract features
-                emb_df = extract_camembert_diff(original, simplified)
-                read_df = extract_readability_features(original, simplified)
-                
-                # Combine features
-                full_input = pd.concat([emb_df, read_df], axis=1)
-                
-                # Make prediction
-                pred = model.predict(full_input)[0]
-                
-                # Display result
-                st.success(f"✅ **Gain prédit: {round(pred, 2)}**")
-                
-                # Additional info
-                st.info(f"""
-                📊 **Statistiques:**
-                - Longueur originale: {len(original)} caractères
-                - Longueur simplifiée: {len(simplified)} caractères
-                - Réduction: {len(original) - len(simplified)} caractères
-                """)
-                
-        except Exception as e:
-            st.error(f"❌ Erreur lors de la prédiction: {str(e)}")
+        emb_df = extract_camembert_diff(original, simplified)
+        emb_pca = pd.DataFrame(pca.transform(emb_df), columns=[f"pca_{i+1}" for i in range(pca.n_components_)])
+        read_df = extract_readability_features(original, simplified)
+        features = pd.concat([emb_pca, read_df], axis=1)
+        value = model.predict(features)[0]
 
-# Examples section
-st.markdown("---")
-st.subheader("📝 Exemples")
+    st.subheader(f"Score prédit : {round(value, 2)}")
+    st.markdown(
+        f"""
+        <div style="width: 100%; height: 25px; background: linear-gradient(to right, red, gray, green); position: relative; border-radius: 5px; margin-top: 10px;">
+            <div style="position: absolute; left: {(value + 3) / 6 * 100}%; top: -5px; width: 0; height: 0;
+                        border-left: 7px solid transparent; border-right: 7px solid transparent;
+                        border-bottom: 10px solid black;"></div>
+        </div>
+        <div style="text-align: center; font-size: 14px; margin-top: 5px;">
+            Échelle : -3 (plus difficile) → +3 (plus facile)
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-example_col1, example_col2 = st.columns(2)
-
-with example_col1:
-    if st.button("Exemple 1"):
-        st.session_state.original = "Cette méthodologie complexe nécessite une compréhension approfondie des paradigmes théoriques."
-        st.session_state.simplified = "Cette méthode demande de bien comprendre les idées de base."
-        st.rerun()
-
-with example_col2:
-    if st.button("Exemple 2"):
-        st.session_state.original = "L'implémentation de cette fonctionnalité requiert une expertise technique considérable."
-        st.session_state.simplified = "Ajouter cette fonction demande beaucoup de connaissances techniques."
-        st.rerun()
-
-# Footer
-st.markdown("---")
-st.markdown("*Développé avec Streamlit*")
+    readable_features_only = features[[col for col in features.columns if not col.startswith("pca_")]]
+    st.dataframe(readable_features_only.round(3))
