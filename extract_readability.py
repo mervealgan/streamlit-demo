@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
 import readability
-
 import spacy
-from spacy.util import set_data_path
 import os
 
 # Local model path (writeable in Streamlit Cloud)
@@ -18,11 +16,6 @@ def get_nlp():
         try:
             _nlp = spacy.load("fr_core_news_sm")
         except OSError:
-            # Redirect spaCy to a writeable model folder
-            os.makedirs(LOCAL_SPACY_PATH, exist_ok=True)
-            set_data_path(LOCAL_SPACY_PATH)
-            
-            # Download and load the model into this folder
             import spacy.cli
             spacy.cli.download("fr_core_news_sm")
             _nlp = spacy.load("fr_core_news_sm")
