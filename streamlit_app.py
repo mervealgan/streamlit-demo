@@ -1,41 +1,59 @@
 import streamlit as st
 import pandas as pd
 import joblib
-
 from extract_readability import extract_readability_features
 from extract_plongements_camembert import extract_camembert_diff
-
 import spacy
 
+# Dictionnaire pour rendre les noms de caractéristiques plus lisibles avec explications
 FEATURE_LABELS = {
-    "diff_LIX": "Δ LIX",
-    "diff_RIX": "Δ RIX",
-    "diff_REL": "Δ REL",
-    "diff_KandelMoles": "Δ Kandel-Moles",
-    "diff_Mesnager": "Δ Mesnager",
-    "diff_characters_per_word": "Δ caractères/mot",
-    "diff_syll_per_word": "Δ syllabes/mot",
-    "diff_words_per_sentence": "Δ mots/phrase",
-    "diff_sentences_per_paragraph": "Δ phrases/paragraphe",
-    "diff_type_token_ratio": "Δ type_token_ratio",
-    "diff_directspeech_ratio": "Δ proportion de discours direct",
-    "diff_characters": "Δ nombre de caractères",
-    "diff_syllables": "Δ nombre de syllabes",
-    "diff_words": "Δ nombre de mots",
-    "diff_wordtypes": "Δ nombre de mots différents",
-    "diff_sentences": "Δ nombre de phrases",
-    "diff_long_words": "Δ mots longs",
-    "diff_complex_words": "Δ mots complexes",
-    "diff_complex_words_mes": "Δ mots complexes (Mesnager)",
-    "diff_tobeverb": "Δ verbes être",
-    "diff_auxverb": "Δ verbes auxiliaires",
-    "diff_conjunction": "Δ conjonctions",
-    "diff_preposition": "Δ prépositions",
-    "diff_nominalization": "Δ nominalisations",
-    "diff_subordination": "Δ subordonnées",
-    "diff_article": "Δ articles",
-    "diff_pronoun": "Δ pronoms",
-    "diff_interrogative": "Δ mots interrogatifs",
+    "diff_LIX": "Indice LIX (complexité générale)",
+    "diff_RIX": "Indice RIX (mots difficiles)",
+    "diff_REL": "Indice REL (longueur relative)",
+    "diff_KandelMoles": "Indice Kandel-Moles",
+    "diff_Mesnager": "Indice Mesnager",
+    "diff_characters_per_word": "Caractères par mot",
+    "diff_syll_per_word": "Syllabes par mot",
+    "diff_words_per_sentence": "Mots par phrase",
+    "diff_sentences_per_paragraph": "Phrases par paragraphe",
+    "diff_type_token_ratio": "Richesse du vocabulaire",
+    "diff_directspeech_ratio": "Proportion de discours direct",
+    "diff_characters": "Nombre total de caractères",
+    "diff_syllables": "Nombre total de syllabes",
+    "diff_words": "Nombre total de mots",
+    "diff_wordtypes": "Nombre de mots différents",
+    "diff_sentences": "Nombre total de phrases",
+    "diff_long_words": "Mots longs (+ de 6 lettres)",
+    "diff_complex_words": "Mots complexes (+ de 2 syllabes)",
+    "diff_complex_words_mes": "Mots complexes (méthode Mesnager)",
+    "diff_tobeverb": "Verbes 'être'",
+    "diff_auxverb": "Verbes auxiliaires",
+    "diff_conjunction": "Conjonctions",
+    "diff_preposition": "Prépositions",
+    "diff_nominalization": "Nominalisations",
+    "diff_subordination": "Propositions subordonnées",
+    "diff_article": "Articles",
+    "diff_pronoun": "Pronoms",
+    "diff_interrogative": "Mots interrogatifs",
+}
+
+# Explications détaillées pour les utilisateurs
+FEATURE_EXPLANATIONS = {
+    "Indice LIX (complexité générale)": "Mesure globale de difficulté de lecture basée sur la longueur des mots et des phrases",
+    "Indice RIX (mots difficiles)": "Proportion de mots longs et difficiles dans le texte",
+    "Indice REL (longueur relative)": "Mesure de la longueur relative des phrases et mots",
+    "Caractères par mot": "Longueur moyenne des mots (moins = plus simple)",
+    "Syllabes par mot": "Complexité phonétique moyenne (moins = plus simple)",
+    "Mots par phrase": "Longueur des phrases (moins = plus simple)",
+    "Richesse du vocabulaire": "Diversité des mots utilisés",
+    "Proportion de discours direct": "Utilisation de dialogue (plus = plus vivant)",
+    "Mots longs (+ de 6 lettres)": "Nombre de mots potentiellement difficiles",
+    "Mots complexes (+ de 2 syllabes)": "Mots phonétiquement complexes",
+    "Verbes 'être'": "Usage du verbe être (simplicité syntaxique)",
+    "Conjonctions": "Mots de liaison (cohérence du texte)",
+    "Prépositions": "Mots de relation spatiale/temporelle",
+    "Nominalisations": "Transformation de verbes en noms (moins = plus simple)",
+    "Propositions subordonnées": "Phrases complexes imbriquées (moins = plus simple)",
 }
 
 try:
@@ -50,7 +68,7 @@ model = joblib.load("mlp_exp_max_rev_read_model.pkl")
 pca = joblib.load("pca_model_max_rev.pkl")
 
 # App layout
-st.title("Prédiction de l’amélioration de lisibilité")
+st.title("Prédiction de l'amélioration de lisibilité")
 st.write("Entrez une phrase **originale** et sa version **simplifiée**.")
 
 original = st.text_area("Phrase originale")
@@ -66,7 +84,7 @@ if st.button("Prédire"):
         read_df = extract_readability_features(original, simplified)
         features = pd.concat([emb_pca, read_df], axis=1)
         value = model.predict(features)[0]
-
+    
     st.subheader(f"Score prédit : {round(value, 2)}")
     st.markdown(
         f"""
@@ -81,7 +99,8 @@ if st.button("Prédire"):
         """,
         unsafe_allow_html=True
     )
-
+    
+    # Filter out PCA features and rename columns with readable labels
     readable_features_only = features[[col for col in features.columns if not col.startswith("pca_")]]
     
     if not readable_features_only.empty:
@@ -89,7 +108,32 @@ if st.button("Prédire"):
         display_features = readable_features_only.copy()
         display_features = display_features.rename(columns=FEATURE_LABELS)
         
-        st.subheader("Caractéristiques de lisibilité")
-        st.dataframe(display_features.round(3))
+        st.subheader("Analyse détaillée des changements de lisibilité")
+        
+        # Add explanation
+        st.info("Comment lire ce tableau :\n"
+                "- **Valeurs négatives** (-) = la version simplifiée a MOINS de cette caractéristique → plus facile à lire\n"
+                "- **Valeurs positives** (+) = la version simplifiée a PLUS de cette caractéristique → peut être plus difficile\n"
+                "- **Zéro** (0) = pas de changement")
+        
+        # Show the dataframe
+        st.dataframe(display_features.round(3), use_container_width=True)
+        
+        # Add collapsible explanations
+        with st.expander("Que signifient ces mesures ?"):
+            st.write("**Cliquez sur une mesure pour en savoir plus :**")
+            
+            # Create columns for better layout
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                for feature, explanation in list(FEATURE_EXPLANATIONS.items())[:len(FEATURE_EXPLANATIONS)//2]:
+                    if feature in display_features.columns:
+                        st.write(f"**{feature}** : {explanation}")
+            
+            with col2:
+                for feature, explanation in list(FEATURE_EXPLANATIONS.items())[len(FEATURE_EXPLANATIONS)//2:]:
+                    if feature in display_features.columns:
+                        st.write(f"**{feature}** : {explanation}")
     else:
         st.write("Aucune différence détectée entre les phrases.")
