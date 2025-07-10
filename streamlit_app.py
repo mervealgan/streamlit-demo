@@ -39,21 +39,35 @@ FEATURE_LABELS = {
 
 # Explications détaillées pour les utilisateurs
 FEATURE_EXPLANATIONS = {
-    "Indice LIX (complexité générale)": "Mesure globale de difficulté de lecture basée sur la longueur des mots et des phrases",
-    "Indice RIX (mots difficiles)": "Proportion de mots longs et difficiles dans le texte",
-    "Indice REL (longueur relative)": "Mesure de la longueur relative des phrases et mots",
-    "Caractères par mot": "Longueur moyenne des mots (moins = plus simple)",
-    "Syllabes par mot": "Complexité phonétique moyenne (moins = plus simple)",
-    "Mots par phrase": "Longueur des phrases (moins = plus simple)",
-    "Richesse du vocabulaire": "Diversité des mots utilisés",
-    "Proportion de discours direct": "Utilisation de dialogue (plus = plus vivant)",
-    "Mots longs (+ de 6 lettres)": "Nombre de mots potentiellement difficiles",
-    "Mots complexes (+ de 2 syllabes)": "Mots phonétiquement complexes",
-    "Verbes 'être'": "Usage du verbe être (simplicité syntaxique)",
-    "Conjonctions": "Mots de liaison (cohérence du texte)",
-    "Prépositions": "Mots de relation spatiale/temporelle",
-    "Nominalisations": "Transformation de verbes en noms (moins = plus simple)",
-    "Propositions subordonnées": "Phrases complexes imbriquées (moins = plus simple)",
+    "Indice LIX (complexité générale)": "Mesure classique de lisibilité en français, basée sur la longueur moyenne des phrases et la proportion de mots longs (plus la valeur est élevée, plus le texte est complexe)",
+
+    "Indice RIX (mots difficiles)": "Variante du LIX, il compte uniquement les mots de plus de 6 lettres pour mesurer la densité lexicale difficile",
+
+    "Indice REL (longueur relative)": "Longueur moyenne des phrases et des mots, combinée en une seule mesure ; une valeur plus élevée indique une plus grande complexité",
+
+    "Caractères par mot": "Mesure indirecte de la complexité lexicale : les mots longs sont souvent plus complexes",
+
+    "Syllabes par mot": "Indicateur de complexité phonologique ; plus un mot contient de syllabes, plus il est considéré comme difficile à lire",
+
+    "Mots par phrase": "Longueur moyenne des phrases, liée à la complexité syntaxique ; des phrases plus longues sont généralement plus difficiles à comprendre",
+
+    "Richesse du vocabulaire": "Indice de diversité lexicale : un vocabulaire plus varié peut enrichir le texte mais aussi en augmenter la difficulté",
+
+    "Proportion de discours direct": "Présence de dialogue ou citations ; elle peut alléger la lecture et renforcer l’effet narratif",
+
+    "Mots longs (+ de 6 lettres)": "Nombre brut de mots considérés comme longs ; lié à la densité lexicale complexe",
+
+    "Mots complexes (+ de 2 syllabes)": "Mots phonologiquement complexes, souvent utilisés dans les formules classiques comme le Flesch-Kincaid adapté au français",
+
+    "Verbes 'être'": "Fréquence d’un verbe simple et fréquent ; un usage élevé peut indiquer une syntaxe plus simple",
+
+    "Conjonctions": "Mesure de la cohérence discursive : les conjonctions servent à relier les idées entre elles",
+
+    "Prépositions": "Indiquent des relations spatiales, temporelles ou logiques ; une fréquence élevée peut signaler une syntaxe plus développée",
+
+    "Nominalisations": "Formes nominales issues de verbes ; elles complexifient la structure en rendant les phrases plus abstraites",
+
+    "Propositions subordonnées": "Indicateur direct de complexité syntaxique ; les phrases contenant des subordonnées sont souvent plus difficiles à lire",
 }
 
 try:
