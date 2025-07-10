@@ -6,6 +6,38 @@ from extract_readability import extract_readability_features
 from extract_plongements_camembert import extract_camembert_diff
 
 import spacy
+
+FEATURE_LABELS = {
+    "diff_LIX": "Δ LIX",
+    "diff_RIX": "Δ RIX",
+    "diff_REL": "Δ REL",
+    "diff_KandelMoles": "Δ Kandel-Moles",
+    "diff_Mesnager": "Δ Mesnager",
+    "diff_characters_per_word": "Δ caractères/mot",
+    "diff_syll_per_word": "Δ syllabes/mot",
+    "diff_words_per_sentence": "Δ mots/phrase",
+    "diff_sentences_per_paragraph": "Δ phrases/paragraphe",
+    "diff_type_token_ratio": "Δ type_token_ratio",
+    "diff_directspeech_ratio": "Δ proportion de discours direct",
+    "diff_characters": "Δ nombre de caractères",
+    "diff_syllables": "Δ nombre de syllabes",
+    "diff_words": "Δ nombre de mots",
+    "diff_wordtypes": "Δ nombre de mots différents",
+    "diff_sentences": "Δ nombre de phrases",
+    "diff_long_words": "Δ mots longs",
+    "diff_complex_words": "Δ mots complexes",
+    "diff_complex_words_mes": "Δ mots complexes (Mesnager)",
+    "diff_tobeverb": "Δ verbes être",
+    "diff_auxverb": "Δ verbes auxiliaires",
+    "diff_conjunction": "Δ conjonctions",
+    "diff_preposition": "Δ prépositions",
+    "diff_nominalization": "Δ nominalisations",
+    "diff_subordination": "Δ subordonnées",
+    "diff_article": "Δ articles",
+    "diff_pronoun": "Δ pronoms",
+    "diff_interrogative": "Δ mots interrogatifs",
+}
+
 try:
     nlp = spacy.load("fr_core_news_sm")
 except:
