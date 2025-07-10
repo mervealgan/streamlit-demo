@@ -83,4 +83,13 @@ if st.button("Prédire"):
     )
 
     readable_features_only = features[[col for col in features.columns if not col.startswith("pca_")]]
-    st.dataframe(readable_features_only.round(3))
+    
+    if not readable_features_only.empty:
+        # Create a copy and rename columns using the feature labels
+        display_features = readable_features_only.copy()
+        display_features = display_features.rename(columns=FEATURE_LABELS)
+        
+        st.subheader("Caractéristiques de lisibilité")
+        st.dataframe(display_features.round(3))
+    else:
+        st.write("Aucune différence détectée entre les phrases.")
